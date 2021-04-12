@@ -1,29 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import nltk
-import os
-import re
 import random  
 import string
 import numpy as np
 import pandas as pd
-from io import StringIO
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from sklearn import datasets
-#from sklearn.cluster import KMeans, AgglomerativeClustering
-
-def convert_dtype(x):
-    if not x:
-        return ''
-    try:
-        return str(x)   
-    except:        
-        return ''
 
 #df = pd.read_csv('/Users/nat2147/Anant/code/python/input.csv', converters={'death_yn': convert_dtype}, low_memory=False)
 df = pd.read_csv('/Users/nat2147/Anant/code/python/input.csv', low_memory=False)
@@ -62,27 +48,38 @@ fig.show()
 # creating our model using Sklearn
 model = GaussianNB()
 #dataset = datasets.load_iris()
-#print(df.head)
-#X = df.astype({'underlying_conditions_yn' : 'float64'}, errors = 'ignore').dtypes
-#df['underlying_conditions_yn'] = pd.to_numeric(df['underlying_conditions_yn'])
+
 #Setting the 'underlying_conditions_yn = yes' cases as 1 and rest as 0 from 'current_status' column
-df['underlying_conditions_yn'] = [1 if i== "Yes" else 0 for i in df['current_status']]
-X = df.underlying_conditions_yn
-y = df.astype({'Confirmed' : 'int32'}).dtypes
-model.fit(X, y)
+df['underlying_conditions_yn'] = [1 if i== "Yes" else 0 for i in df['underlying_conditions_yn']]
 
-# making predictions
-expected = y
-predicted = model.predict(X)
+#Setting the 'sex' to 1 for Female, 2 for Male and rest as 0 from 'sex' column
+#df['sex'] = [1 if i== "Female" else 2 for i== "Male" else 0 for i in df['sex']]
 
-# accuracy & statistics
-print(metrics.classification_report(expected, predicted))
-print(metrics.confusion_matrix(expected, predicted))
+#Setting the 'hosp_yn' to 1 for yes and rest as 0 from 'hosp_yn' column
+df['hosp_yn'] = [1 if i== "Yes" else 0 for i in df['hosp_yn']]
 
-'''
-# split the data into train and test set
-train, test = train_test_split(df, test_size=0.2, random_state=42, shuffle=True)
-train.to_csv('/Users/nat2147/Anant/code/python/prediction/train.csv')
-test.to_csv('/Users/nat2147/Anant/code/python/prediction/test.csv')
+#Setting the 'icu_yn' to 1 for yes and rest as 0 from 'icu_yn' column
+df['icu_yn'] = [1 if i== "Yes" else 0 for i in df['icu_yn']]
 
-'''
+#Setting the 'death_yn' to 1 for yes and rest as 0 from 'death_yn' column
+df['death_yn'] = [1 if i== "Yes" else 0 for i in df['death_yn']]
+
+#Splitting dataset into train and test parts
+#X = df[["underlying_conditions_yn","age_group","hosp_yn","icu_yn","death_yn"]]
+X = df[["underlying_conditions_yn","hosp_yn","icu_yn","death_yn"]]
+y = df[["current_status"]]
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, random_state=0)
+
+model.fit(Xtrain, ytrain)
+
+# making predictions & calculating accuracy & statistics
+ypred=model.predict(Xtest)
+accuracy = metrics.accuracy_score(ytest,ypred)
+report = metrics.classification_report(ypred, ytest)
+cm = metrics.confusion_matrix(ytest, ypred)
+
+print("Classification report:")
+print("Accuracy: ",accuracy)
+print(report)
+print("Confusion matrix:")
+print(cm)
