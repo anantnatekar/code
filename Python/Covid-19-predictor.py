@@ -75,7 +75,7 @@ model.fit(Xtrain, ytrain)
 # making predictions & calculating accuracy & statistics
 ypred=model.predict(Xtest)
 accuracy = metrics.accuracy_score(ytest,ypred)
-report = metrics.classification_report(ypred, ytest)
+report = metrics.classification_report(ytest, ypred)
 cm = metrics.confusion_matrix(ytest, ypred)
 
 print("Classification report:")
