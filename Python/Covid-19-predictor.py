@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import requests
+import json
 import random  
 import string
 import numpy as np
@@ -10,8 +12,23 @@ import plotly.graph_objects as go
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
+# for invoking spark
+from pyspark.context import SparkContext
+from pyspark.sql.session import SparkSession
 
-#df = pd.read_csv('/Users/nat2147/Anant/code/python/input.csv', converters={'death_yn': convert_dtype}, low_memory=False)
+# read the file from the URL
+#response = json.loads(requests.get("https://data.cdc.gov/resource/n8mc-b4w4.json").text)
+#response = json.loads(requests.get("https://data.cdc.gov/api/views/n8mc-b4w4/rows.json").text)
+#URL_DATASET = r'https://data.cdc.gov/resource/n8mc-b4w4.json'
+#r = requests.get(URL_DATASET, allow_redirects=True)
+#dict = r.json()
+
+
+# put the response into a dataframe
+#df = pd.DataFrame.from_dict()
+#sc = SparkContext('local')
+#spark = SparkSession(sc)
+#df = spark.createDataFrame(dict)
 df = pd.read_csv('/Users/nat2147/Anant/code/python/input.csv', low_memory=False)
 
 df['case_month'] = pd.to_datetime(df['case_month'])
@@ -68,13 +85,14 @@ df['death_yn'] = [1 if i== "Yes" else 0 for i in df['death_yn']]
 #X = df[["underlying_conditions_yn","age_group","hosp_yn","icu_yn","death_yn"]]
 X = df[["underlying_conditions_yn","hosp_yn","icu_yn","death_yn"]]
 y = df[["current_status"]]
-Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, random_state=0)
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size = 0.4, random_state=0)
 
 model.fit(Xtrain, ytrain)
 
 # making predictions & calculating accuracy & statistics
 ypred=model.predict(Xtest)
 accuracy = metrics.accuracy_score(ytest,ypred)
+#report = metrics.classification_report(ypred, ytest)
 report = metrics.classification_report(ytest, ypred)
 cm = metrics.confusion_matrix(ytest, ypred)
 
